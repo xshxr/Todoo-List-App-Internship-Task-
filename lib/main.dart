@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use, library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
@@ -41,9 +43,10 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       title: 'To-Do List',
       theme: ThemeData(
-        primarySwatch: Colors.blueGrey,
+        primarySwatch: Colors.teal,
+        hintColor: Colors.amber,
         brightness: Brightness.light,
-        scaffoldBackgroundColor: Colors.grey.shade200,
+        scaffoldBackgroundColor: Colors.white,
         textTheme: const TextTheme(
           bodyLarge: TextStyle(color: Colors.black87),
           bodyMedium: TextStyle(color: Colors.black87),
@@ -51,13 +54,14 @@ class _MyAppState extends State<MyApp> {
         ),
       ),
       darkTheme: ThemeData(
-        primarySwatch: Colors.blueGrey,
+        primarySwatch: Colors.teal,
+        hintColor: Colors.deepOrangeAccent,
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF212121),
-        textTheme: const TextTheme(
-          bodyLarge: TextStyle(color: Colors.white70),
-          bodyMedium: TextStyle(color: Colors.white70),
-          displayLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+        scaffoldBackgroundColor: Colors.grey.shade900,
+        textTheme: TextTheme(
+          bodyLarge: TextStyle(color: Colors.grey.shade300),
+          bodyMedium: TextStyle(color: Colors.grey.shade300),
+          displayLarge: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
         ),
       ),
       themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
@@ -99,7 +103,7 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
         _controller.clear();
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Task added')),
+        SnackBar(content: const Text('Task added'), backgroundColor: widget.isDarkMode ? Colors.teal : Colors.amber),
       );
     }
   }
@@ -149,7 +153,7 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
       importance: Importance.max,
       priority: Priority.high,
       showWhen: false,
-      color: Colors.blueGrey,
+      color: Colors.teal,
       playSound: true,
       icon: '@mipmap/ic_launcher',
     );
@@ -183,7 +187,7 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.delete, color: Colors.redAccent),
+            leading: const Icon(Icons.delete, color: Colors.red),
             title: const Text('Delete Task'),
             onTap: () {
               Navigator.pop(context);
@@ -191,8 +195,9 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.alarm, color: Colors.blueGrey),
+            leading: const Icon(Icons.alarm, color: Colors.white),
             title: const Text('Set Alarm'),
+            textColor: Colors.black,
             onTap: () {
               Navigator.pop(context);
               _selectAlarmTime(context, index);
@@ -229,12 +234,12 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
                     decoration: InputDecoration(
                       hintText: 'Enter a task',
                       hintStyle: TextStyle(
-                        color: widget.isDarkMode ? Colors.white60 : Colors.black54,
+                        color: widget.isDarkMode ? Colors.grey.shade400 : Colors.grey.shade600,
                       ),
                       filled: true,
                       fillColor: widget.isDarkMode
-                          ? const Color.fromARGB(255, 50, 50, 50)
-                          : const Color.fromARGB(255, 255, 255, 255),
+                          ? const Color.fromARGB(255, 48, 48, 48)
+                          : const Color.fromARGB(255, 255, 239, 204),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12.0),
                         borderSide: BorderSide.none,
@@ -249,7 +254,7 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
                 const SizedBox(width: 10),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueGrey.shade800,
+                    backgroundColor: Colors.teal.shade700,
                     padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.0),
@@ -268,7 +273,7 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
               style: TextStyle(
                 fontSize: 16,
                 fontStyle: FontStyle.italic,
-                color: widget.isDarkMode ? Colors.white70 : Colors.black54,
+                color: widget.isDarkMode ? Colors.grey.shade400 : Colors.grey.shade600,
               ),
               textAlign: TextAlign.center,
             ),
@@ -278,7 +283,7 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Colors.blueGrey,
+                color: Colors.teal,
               ),
               textAlign: TextAlign.center,
             ),
@@ -291,16 +296,16 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
                     key: Key(_tasks[index]),
                     direction: DismissDirection.horizontal,
                     background: Container(
-                      color: Colors.teal,
+                      color: Colors.teal.shade200,
                       alignment: Alignment.centerLeft,
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: const Icon(Icons.check_circle, color: Colors.white),
+                      child: const Icon(Icons.check_circle, color: Colors.teal),
                     ),
                     secondaryBackground: Container(
-                      color: Colors.redAccent,
+                      color: Colors.red.shade300,
                       alignment: Alignment.centerRight,
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: const Icon(Icons.delete, color: Colors.white),
+                      child: const Icon(Icons.delete, color: Colors.red),
                     ),
                     confirmDismiss: (direction) async {
                       if (direction == DismissDirection.startToEnd) {
@@ -342,6 +347,7 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
                         ),
                         elevation: 6,
                         margin: const EdgeInsets.symmetric(vertical: 6.0),
+                        color: widget.isDarkMode ? Colors.teal.shade800 : Colors.blueGrey.shade50,
                         child: ListTile(
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                           title: Text(
@@ -365,7 +371,7 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Colors.blueGrey,
+                color: Colors.teal,
               ),
               textAlign: TextAlign.center,
             ),
@@ -380,6 +386,7 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
                     ),
                     elevation: 6,
                     margin: const EdgeInsets.symmetric(vertical: 6.0),
+                    color: widget.isDarkMode ? Colors.teal.shade700 : Colors.teal.shade100,
                     child: ListTile(
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                       title: Text(
