@@ -1,4 +1,4 @@
-// ignore_for_file: deprecated_member_use, library_private_types_in_public_api
+// ignore_for_file: library_private_types_in_public_api, deprecated_member_use
 
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -41,10 +41,10 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'To-Do List',
+      title: 'ToDoo',
       theme: ThemeData(
         primarySwatch: Colors.teal,
-        hintColor: Colors.amber,
+        hintColor: const Color.fromARGB(255, 31, 156, 251),
         brightness: Brightness.light,
         scaffoldBackgroundColor: Colors.white,
         textTheme: const TextTheme(
@@ -93,6 +93,7 @@ class ToDoListScreen extends StatefulWidget {
 class _ToDoListScreenState extends State<ToDoListScreen> {
   final List<String> _tasks = [];
   final List<String> _completedTasks = [];
+  final List<String> _deletedTasks = [];
   final TextEditingController _controller = TextEditingController();
   TimeOfDay? _selectedTime;
 
@@ -103,7 +104,10 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
         _controller.clear();
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: const Text('Task added'), backgroundColor: widget.isDarkMode ? Colors.teal : Colors.amber),
+        SnackBar(
+          content: const Text('Task added'),
+          backgroundColor: widget.isDarkMode ? Colors.teal : const Color.fromARGB(255, 31, 156, 251),
+        ),
       );
     }
   }
@@ -117,7 +121,21 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
 
   void _deleteTask(int index) {
     setState(() {
+      _deletedTasks.add(_tasks[index]); // Add to deleted list
       _tasks.removeAt(index);
+    });
+  }
+
+  void _restoreTask(String task) {
+    setState(() {
+      _deletedTasks.remove(task);
+      _tasks.add(task);
+    });
+  }
+
+  void _deleteCompletedTask(int index) {
+    setState(() {
+      _completedTasks.removeAt(index);
     });
   }
 
@@ -195,9 +213,8 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.alarm, color: Colors.white),
+            leading: const Icon(Icons.alarm, color: Color.fromARGB(255, 31, 156, 251)),
             title: const Text('Set Alarm'),
-            textColor: Colors.black,
             onTap: () {
               Navigator.pop(context);
               _selectAlarmTime(context, index);
@@ -208,15 +225,74 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
     );
   }
 
+  void _showCompletedTaskOptions(int index) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.delete, color: Colors.red),
+            title: const Text('Delete Task'),
+            onTap: () {
+              Navigator.pop(context);
+              _deleteCompletedTask(index);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final taskColor = widget.isDarkMode ? Colors.teal.shade300 : const Color.fromARGB(255, 31, 156, 251);
+    final completedTaskColor = widget.isDarkMode ? Colors.teal.shade300 : const Color.fromARGB(255, 31, 156, 251);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('To-Do List'),
+        title: const Text('ToDoo'),
         actions: [
           IconButton(
             icon: Icon(widget.isDarkMode ? Icons.wb_sunny : Icons.nights_stay),
             onPressed: widget.toggleTheme,
+          ),
+          IconButton(
+            icon: const Icon(Icons.restore_from_trash),
+            onPressed: () {
+              if (_deletedTasks.isNotEmpty) {
+                showModalBottomSheet(
+                  context: context,
+                  builder: (context) => Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Text(
+                          'Deleted Tasks',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      ..._deletedTasks.map((task) => ListTile(
+                            title: Text(task),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.restore),
+                              onPressed: () {
+                                Navigator.pop(context);
+                                _restoreTask(task);
+                              },
+                            ),
+                          )),
+                      if (_deletedTasks.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: Text('No deleted tasks'),
+                        ),
+                    ],
+                  ),
+                );
+              }
+            },
           ),
         ],
       ),
@@ -231,39 +307,39 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
                 Expanded(
                   child: TextField(
                     controller: _controller,
+                    maxLines: null, // Allow multiple lines
+                    keyboardType: TextInputType.multiline,
                     decoration: InputDecoration(
                       hintText: 'Enter a task',
                       hintStyle: TextStyle(
-                        color: widget.isDarkMode ? Colors.grey.shade400 : Colors.grey.shade600,
+                        color: widget.isDarkMode ? Colors.white : Colors.white,
                       ),
                       filled: true,
                       fillColor: widget.isDarkMode
-                          ? const Color.fromARGB(255, 48, 48, 48)
-                          : const Color.fromARGB(255, 255, 239, 204),
+                          ? const Color.fromARGB(255, 31, 156, 251)
+                          : const Color.fromARGB(255, 31, 156, 251),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12.0),
                         borderSide: BorderSide.none,
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12.0),
                     ),
                     style: TextStyle(
-                      color: widget.isDarkMode ? Colors.white : Colors.black,
+                      color: widget.isDarkMode ? Colors.white : Colors.white,
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal.shade700,
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.0),
-                    ),
-                    elevation: 8,
-                    textStyle: const TextStyle(fontSize: 16),
+                Container(
+                  margin: const EdgeInsets.only(left: 8.0),
+                  decoration: BoxDecoration(
+                    color: widget.isDarkMode ? Colors.teal : Colors.teal,
+                    shape: BoxShape.circle,
                   ),
-                  onPressed: _addTask,
-                  child: const Icon(Icons.add, color: Colors.white),
+                  child: IconButton(
+                    icon: const Icon(Icons.add, color: Colors.white),
+                    onPressed: _addTask,
+                    padding: const EdgeInsets.all(16),
+                  ),
                 ),
               ],
             ),
@@ -278,12 +354,12 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
-            const Text(
+            Text(
               'Tasks to Complete',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Colors.teal,
+                color: taskColor,
               ),
               textAlign: TextAlign.center,
             ),
@@ -347,16 +423,16 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
                         ),
                         elevation: 6,
                         margin: const EdgeInsets.symmetric(vertical: 6.0),
-                        color: widget.isDarkMode ? Colors.teal.shade800 : Colors.blueGrey.shade50,
+                        color: widget.isDarkMode ? Colors.teal : Colors.teal,
                         child: ListTile(
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                           title: Text(
                             _tasks[index],
                             style: TextStyle(
                               fontSize: 18,
-                              color: widget.isDarkMode ? Colors.white : Colors.black,
+                              color: widget.isDarkMode ? Colors.white : Colors.white,
                             ),
-                            textAlign: TextAlign.center,
+                            textAlign: TextAlign.left,
                           ),
                         ),
                       ),
@@ -366,36 +442,39 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
               ),
             ),
             const SizedBox(height: 20),
-            const Text(
+            Text(
               'Completed Tasks',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Colors.teal,
+                color: completedTaskColor,
               ),
-              textAlign: TextAlign.center,
+              textAlign: TextAlign.left,
             ),
             const SizedBox(height: 20),
             Expanded(
               child: ListView.builder(
                 itemCount: _completedTasks.length,
                 itemBuilder: (context, index) {
-                  return Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16.0),
-                    ),
-                    elevation: 6,
-                    margin: const EdgeInsets.symmetric(vertical: 6.0),
-                    color: widget.isDarkMode ? Colors.teal.shade700 : Colors.teal.shade100,
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                      title: Text(
-                        _completedTasks[index],
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: widget.isDarkMode ? Colors.white : Colors.black,
+                  return GestureDetector(
+                    onLongPress: () => _showCompletedTaskOptions(index),
+                    child: Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16.0),
+                      ),
+                      elevation: 6,
+                      margin: const EdgeInsets.symmetric(vertical: 6.0),
+                      color: widget.isDarkMode ? Colors.teal.shade200 : Colors.teal.shade100,
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                        title: Text(
+                          _completedTasks[index],
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: widget.isDarkMode ? Colors.white : Colors.white,
+                          ),
+                          textAlign: TextAlign.left,
                         ),
-                        textAlign: TextAlign.center,
                       ),
                     ),
                   );
